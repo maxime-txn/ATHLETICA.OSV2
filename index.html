@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport strict pour iOS : user-scalable=0 et initial-scale=1 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+    <title>AthleticaOS</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AthleticaOS">
+    <meta name="theme-color" content="#FBFBFB">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1041/1041261.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --apple-bg: #FBFBFB;
+            --apple-glass: rgba(255, 255, 255, 0.72);
+            --apple-border: rgba(0, 0, 0, 0.04);
+            --apple-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --apple-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            
+            /* Safe Area Variables */
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%; /* Empêche l'ajustement de la taille du texte par iOS */
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--apple-bg);
+            color: #1D1D1F;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+            /* Utilisation de dvh pour une hauteur pleine réelle sur mobile */
+            min-height: 100dvh;
+            /* Gestion du safe area global si nécessaire */
+            padding-left: var(--sal);
+            padding-right: var(--sar);
+        }
+
+        .glass {
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            background-color: var(--apple-glass);
+            border: 1px solid var(--apple-border);
+        }
+
+        .sidebar-glass {
+            background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(245,245,247,0.8) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+
+        .squircle { border-radius: 2.5rem; }
+        .squircle-lg { border-radius: 3.5rem; }
+
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* CRUCIAL pour iOS : Empêcher le zoom sur focus */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+
+        /* Amélioration de la réactivité tactile */
+        button, a, input, select {
+            touch-action: manipulation;
+        }
+
+        /* Animations */
+        @keyframes viewEnter {
+          from { opacity: 0; transform: translateY(20px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .view-animate {
+          animation: viewEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .shimmer {
+          background: linear-gradient(90deg, transparent, rgba(0,0,0,0.02), transparent);
+          background-size: 200% 100%;
+          animation: shimmer 3s infinite linear;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "vite": "https://esm.sh/vite@^7.3.0"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>

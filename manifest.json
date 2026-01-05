@@ -1,0 +1,19 @@
+
+{
+  "name": "AthleticaOS",
+  "short_name": "AthleticaOS",
+  "description": "Système d'exploitation de performance athlétique.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBFBFB",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1041/1041261.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
