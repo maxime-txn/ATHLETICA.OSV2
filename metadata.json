@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Athletica OS V2",
+  "name": "Athletica OS",
   "description": "Système d'exploitation de performance athlétique. Analyse des données d'entraînement, nutrition et récupération avec une interface épurée style Apple.",
   "requestFramePermissions": [
     "camera"

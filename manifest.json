@@ -1,7 +1,6 @@
-
 {
-  "name": "AthleticaOS",
-  "short_name": "AthleticaOS",
+  "name": "Athletica OS",
+  "short_name": "Athletica",
   "description": "Système d'exploitation de performance athlétique.",
   "start_url": "/",
   "display": "standalone",
