@@ -1,6 +1,19 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { TrainingLog, NutritionLog, ActivitySession, AnalysisResponse, AnalysisError } from "./types";
+
+// KEY MANAGEMENT
+export const getStoredApiKey = (): string | null => {
+  // 1. Priorité à la variable d'environnement (si définie lors du build/déploiement)
+  if (process.env.API_KEY && process.env.API_KEY.length > 5) {
+    return process.env.API_KEY;
+  }
+  // 2. Sinon, on regarde dans le stockage local de l'utilisateur
+  return localStorage.getItem('athletica_api_key');
+};
+
+export const setStoredApiKey = (key: string) => {
+  localStorage.setItem('athletica_api_key', key);
+};
 
 // Fonction utilitaire pour préparer le contexte texte
 const prepareContext = (
@@ -51,6 +64,11 @@ export const analyzeAthletePerformance = async (
   userWeight: number = 80
 ): Promise<AnalysisResponse | AnalysisError> => {
   
+  const apiKey = getStoredApiKey();
+  if (!apiKey) {
+      return { isError: true, message: "API_KEY_MISSING" };
+  }
+
   const contextData = prepareContext(training, nutrition, activity, userWeight);
 
   const systemInstruction = `Tu es l'IA analytique d'Athletica OS.
@@ -70,7 +88,7 @@ export const analyzeAthletePerformance = async (
   }`;
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: contextData,
@@ -128,6 +146,9 @@ export const sendChatMessage = async (
   chatHistory: { role: string, parts: { text: string }[] }[]
 ): Promise<string> => {
   
+  const apiKey = getStoredApiKey();
+  if (!apiKey) return "Veuillez configurer votre clé API Gemini dans l'onglet Dashboard.";
+
   const contextData = prepareContext(training, nutrition, activity, 80); // Poids hardcodé pour l'instant
   
   const systemInstruction = `Tu es le Coach Intelligent d'Athletica OS.
@@ -145,7 +166,7 @@ export const sendChatMessage = async (
   `;
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     const chat = ai.chats.create({
       model: "gemini-3-flash-preview",
       config: {

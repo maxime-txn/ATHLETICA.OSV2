@@ -120,14 +120,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ activitySessions, trainingL
       {/* HEADER NAVIGATION */}
       <div className="flex items-center justify-between px-2">
         <div>
-            <h2 className="text-3xl font-black tracking-tighter uppercase text-gray-900 leading-none">
+            {/* CORRECTION TITRE : clamp() */}
+            <h2 className="font-black tracking-tighter uppercase text-gray-900 leading-none" style={{ fontSize: 'clamp(24px, 5vw, 48px)', wordBreak: 'break-word' }}>
             STRATÉGIE <span className="text-black/10">TEMPORELLE</span>
             </h2>
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">Vue d'ensemble tactique</p>
         </div>
-        <div className="flex items-center gap-4 bg-white border border-gray-100 p-1.5 rounded-[1.5rem] shadow-sm">
+        <div className="flex items-center gap-4 bg-white border border-gray-100 p-1.5 rounded-[1.5rem] shadow-sm shrink-0">
             <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 rounded-full transition-colors font-black text-lg">←</button>
-            <span className="text-xs font-black uppercase w-32 text-center tracking-widest">{currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+            <span className="text-xs font-black uppercase w-20 md:w-32 text-center tracking-widest truncate">{currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
             <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 rounded-full transition-colors font-black text-lg">→</button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { TrainingLog, ActivitySession, AnalysisResponse, ChatMessage, NutritionLog } from '../types';
-import { sendChatMessage } from '../geminiService';
+import { sendChatMessage, getStoredApiKey, setStoredApiKey } from '../geminiService';
 import { 
   LineChart, Line, XAxis, Tooltip, ResponsiveContainer, 
   BarChart, Bar, Cell, AreaChart, Area
@@ -18,6 +18,10 @@ interface AnalysisViewProps {
 const AnalysisView: React.FC<AnalysisViewProps> = ({ training, activity = [], aiAnalysis, loading, onRefresh }) => {
   const [subTab, setSubTab] = useState<'dashboard' | 'chat'>('dashboard');
   
+  // API KEY STATE
+  const [hasApiKey, setHasApiKey] = useState<boolean>(!!getStoredApiKey());
+  const [tempKey, setTempKey] = useState('');
+
   // --- CHAT STATE ---
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: '1', role: 'model', text: 'Salut ! Je suis ton coach IA. J\'ai analysé tes 30 derniers jours. Une question sur ta récup ou ton volume ?' }
@@ -26,9 +30,11 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ training, activity = [], ai
   const [isChatLoading, setIsChatLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-refresh analysis on mount if empty (silent update)
+  // Check for API key on mount and refresh if needed
   useEffect(() => {
-    if (!aiAnalysis && !loading) {
+    const key = getStoredApiKey();
+    setHasApiKey(!!key);
+    if (key && !aiAnalysis && !loading) {
       onRefresh();
     }
   }, []);
@@ -37,6 +43,14 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ training, activity = [], ai
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, subTab]);
+
+  const handleSaveKey = () => {
+      if(tempKey.trim().length > 10) {
+          setStoredApiKey(tempKey.trim());
+          setHasApiKey(true);
+          onRefresh(); // Trigger first analysis
+      }
+  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -97,13 +111,55 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ training, activity = [], ai
         }));
   }, [activity]);
 
+  // --- NO KEY STATE RENDER ---
+  if (!hasApiKey) {
+      return (
+          <div className="h-full flex flex-col items-center justify-center space-y-8 animate-in fade-in p-6 text-center">
+              <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl mb-4">
+                  <span className="text-4xl">🧠</span>
+              </div>
+              <div className="space-y-2 max-w-sm">
+                  <h2 className="text-2xl font-black uppercase tracking-tight">Activation Intelligence</h2>
+                  <p className="text-gray-400 font-medium text-sm leading-relaxed">
+                      Pour analyser tes performances, Athletica a besoin d'une clé <strong>Google Gemini API</strong> (Gratuite).
+                  </p>
+              </div>
+
+              <div className="w-full max-w-sm space-y-4">
+                  <input 
+                    type="password" 
+                    placeholder="Coller la clé API ici (AIza...)" 
+                    value={tempKey}
+                    onChange={(e) => setTempKey(e.target.value)}
+                    className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-center font-mono text-sm outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                  />
+                  <button 
+                    onClick={handleSaveKey}
+                    disabled={tempKey.length < 10}
+                    className="w-full py-4 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  >
+                      Activer le Laboratoire
+                  </button>
+              </div>
+              
+              <div className="pt-8">
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-blue-500 text-xs font-bold uppercase tracking-widest hover:underline">
+                      Obtenir une clé gratuitement ↗
+                  </a>
+                  <p className="text-[10px] text-gray-300 mt-2">La clé est stockée uniquement sur ton téléphone.</p>
+              </div>
+          </div>
+      );
+  }
+
   return (
     <div className={`space-y-6 animate-in fade-in duration-500 pb-24 h-full flex flex-col ${subTab === 'chat' ? 'h-[calc(100dvh-140px)]' : ''}`}>
       
       {/* HEADER & TABS */}
       <div className="flex items-center justify-between px-2">
          <div>
-            <h2 className="text-3xl font-black tracking-tighter uppercase">INTELLIGENCE <span className="text-gray-300">HUB</span></h2>
+            {/* CORRECTION TITRE : clamp() */}
+            <h2 className="font-black tracking-tighter uppercase" style={{ fontSize: 'clamp(24px, 5vw, 48px)', wordBreak: 'break-word' }}>INTELLIGENCE <span className="text-gray-300">HUB</span></h2>
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gemini 3 Powered Analysis</p>
          </div>
          <div className="bg-white border border-gray-100 p-1 rounded-2xl flex shadow-sm">
@@ -125,15 +181,16 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ training, activity = [], ai
       {/* --- DASHBOARD VIEW --- */}
       {subTab === 'dashboard' && (
         <div className="space-y-6 animate-in slide-in-from-bottom-4">
-          {/* ... (Contenu Dashboard inchangé) ... */}
           {/* 1. AI INSIGHT CARD (Auto-generated) */}
           <div className="bg-gradient-to-br from-gray-900 to-black p-6 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden min-h-[160px] flex flex-col justify-center">
             <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             
-            {loading ? (
+            {(loading || (aiAnalysis?.isError && aiAnalysis.message === 'API_KEY_MISSING')) ? (
                <div className="flex items-center gap-3 animate-pulse">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-                  <span className="text-xs font-bold uppercase tracking-widest text-white/50">Analyse en cours...</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-white/50">
+                      {aiAnalysis?.isError ? "Erreur Clé API" : "Analyse en cours..."}
+                  </span>
                </div>
             ) : (
                <div className="relative z-10 space-y-3">
@@ -210,6 +267,13 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ training, activity = [], ai
                 </div>
             </div>
           )}
+
+          {/* RESET KEY (Bottom) */}
+          <div className="pt-4 text-center">
+             <button onClick={() => { setStoredApiKey(''); setHasApiKey(false); }} className="text-[9px] font-bold text-gray-300 hover:text-red-500 uppercase tracking-widest">
+                Réinitialiser la clé API
+             </button>
+          </div>
         </div>
       )}
 
@@ -242,8 +306,9 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ training, activity = [], ai
            </div>
 
            {/* Input Area - Absolute bottom to act as keyboard accessory */}
+           {/* CORRECTION INPUT : width calc() et margins */}
            <div className="absolute bottom-0 left-0 right-0 p-3 bg-white border-t border-gray-100 bg-opacity-90 backdrop-blur-sm z-10">
-              <div className="flex gap-2 items-end">
+              <div className="flex gap-2 items-end w-full max-w-[calc(100%-32px)] mx-auto">
                  <textarea 
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
